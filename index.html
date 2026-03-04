@@ -64,29 +64,16 @@ function login(){
     const password = document.getElementById("password").value;
 
     if(users[username] && users[username].password === password){
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        document.getElementById("roleTitle").innerText = users[username].role + " Dashboard";
+        // 儲存登入狀態
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("role", users[username].role);
 
-        if(users[username].role === "Admin"){
-            document.getElementById("content").innerHTML =
-                "<p>顯示完整專案資訊</p>";
-               
-
-        } else {
-            document.getElementById("content").innerHTML =
-                "<p>僅顯示業務可查看資訊</p>";
-        }
-
+        // 跳轉頁面
         window.location.href = "tracker.html";
 
     } else {
         document.getElementById("error").innerText = "帳號或密碼錯誤";
     }
-}
-
-function logout(){
-    location.reload();
 }
 
 </script>
