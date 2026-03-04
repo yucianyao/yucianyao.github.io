@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PM Management Dashboard</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#000;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+#loginBox, #dashboard{
+    text-align:center;
+}
+input{
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:5px;
+}
+button{
+    padding:10px 20px;
+    border:none;
+    border-radius:5px;
+    background:#00bcd4;
+    color:#fff;
+    cursor:pointer;
+}
+button:hover{
+    background:#0097a7;
+}
+</style>
+</head>
+<body>
+
+<div id="loginBox">
+    <h1>PM Management Dashboard</h1>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p id="error" style="color:red;"></p>
+</div>
+
+<div id="dashboard" style="display:none;">
+    <h1 id="roleTitle"></h1>
+    <div id="content"></div>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+
+const users = {
+    admin: { password: "admin123", role: "Admin" },
+    sales: { password: "sales123", role: "Sales" }
+};
+
+function login(){
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    if(users[username] && users[username].password === password){
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("roleTitle").innerText = users[username].role + " Dashboard";
+
+        if(users[username].role === "Admin"){
+            document.getElementById("content").innerHTML =
+                "<p>顯示完整專案資訊</p>";
+        } else {
+            document.getElementById("content").innerHTML =
+                "<p>僅顯示業務可查看資訊</p>";
+        }
+
+    } else {
+        document.getElementById("error").innerText = "帳號或密碼錯誤";
+    }
+}
+
+function logout(){
+    location.reload();
+}
+
+</script>
+
+</body>
+</html>
