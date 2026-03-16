@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>YUAN HW Tracker</title>
+<style>
+:root{
+  --ink:#0f1923;--paper:#f5f3ee;--paper2:#edeae3;--line:#d8d4cb;
+  --accent:#c8392b;--green:#2d6a4f;--blue:#1a3a5c;--gold:#c9960c;
+  --text:#1e2d3d;--text2:#5a6677;--text3:#8a97a8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--text);height:100vh;overflow:hidden;display:flex}
+#sidebar{width:210px;flex-shrink:0;background:var(--ink);color:#fff;display:flex;flex-direction:column;height:100vh}
+.logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo-t{font-size:17px;font-weight:800;letter-spacing:1px;color:#fff}
+.logo-s{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-top:2px}
+.sb-sec{font-size:8px;letter-spacing:2px;color:rgba(255,255,255,.22);padding:14px 16px 5px;text-transform:uppercase}
+.sb-btn{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.55);transition:all .12s;border-left:3px solid transparent;border:none;background:none;width:100%;text-align:left}
+.sb-btn:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-btn.on{background:rgba(200,57,43,.18);color:#fff;border-left:3px solid var(--accent)}
+.sb-foot{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);font-size:9px;color:rgba(255,255,255,.2);line-height:1.7}
+.sb-foot a{color:rgba(200,100,90,.8);cursor:pointer;text-decoration:none}
+#gs-st{margin-top:3px;font-size:8px}
+#main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+#hdr{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr-title{font-size:18px;font-weight:800;color:var(--ink)}
+.hdr-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.hdr-r{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn{padding:6px 13px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--text2);transition:all .12s;font-family:inherit}
+.btn:hover{background:var(--paper2)}
+.btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.pri:hover{background:#b5301f}
+#body{flex:1;overflow-y:auto;padding:18px 20px}
+.pg{display:none}.pg.on{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:7px;padding:13px 15px}
+.card-lbl{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.card-num{font-size:30px;font-weight:800;line-height:1}
+.card.blue .card-num{color:var(--blue)}.card.red .card-num{color:var(--accent)}
+.card.green .card-num{color:var(--green)}.card.gold .card-num{color:var(--gold)}
+.sec-t{font-size:14px;font-weight:700;margin-bottom:9px;color:var(--ink)}
+.fbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.fbar select,.fbar input{font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--text);font-family:inherit}
+.fbar input{width:180px}
+.cnt{font-size:10px;color:var(--text3)}
+.tblw{background:#fff;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--ink);color:rgba(255,255,255,.78);padding:8px 11px;text-align:left;font-size:10px;font-weight:600;white-space:nowrap;position:sticky;top:0;z-index:2}
+tr.row{border-bottom:1px solid var(--line);cursor:pointer;transition:background .08s}
+tr.row:hover{background:var(--paper)}
+td{padding:7px 11px;vertical-align:middle}
+.tid{font-size:10px;color:var(--text3);font-family:'Courier New',monospace;white-space:nowrap}
+.tmod{font-weight:600}.tver{font-size:9px;color:var(--text3);margin-top:1px}
+.badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;white-space:nowrap;font-weight:600}
+.cbadge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;white-space:nowrap;font-weight:600}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:7px;padding:14px;margin-bottom:10px;cursor:pointer;transition:box-shadow .12s}
+.pcard:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;align-items:center;justify-content:center}
+#ov.on{display:flex}
+#modal{background:#fff;border-radius:9px;width:min(640px,94vw);max-height:88vh;overflow-y:auto;box-shadow:0 16px 50px rgba(0,0,0,.28)}
+.mhdr{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:#fff;z-index:2}
+.mid{font-size:10px;color:var(--text3);font-family:'Courier New',monospace}
+.mtitle{font-size:15px;font-weight:700;margin-top:3px}
+.mcls{font-size:22px;color:var(--text3);cursor:pointer;line-height:1}
+.mcls:hover{color:var(--text)}
+.mbody{padding:18px 22px}
+.msec{margin-bottom:16px}
+.msec-t{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px}
+.mf label{font-size:10px;color:var(--text3);display:block;margin-bottom:2px}
+.mf .v{font-size:13px;font-weight:600}
+.mf .e{font-size:11px;color:var(--text3);font-style:italic}
+.tl{display:flex;align-items:center;overflow-x:auto;padding:6px 0;gap:0}
+.tli{display:flex;flex-direction:column;align-items:center;min-width:68px}
+.tld{width:11px;height:11px;border-radius:50%;background:var(--line);border:2px solid var(--line)}
+.tld.done{background:var(--green);border-color:var(--green)}
+.tll{height:2px;flex:1;background:var(--line);min-width:14px;align-self:center}
+.tll.done{background:var(--green)}
+.tln{font-size:8px;color:var(--text3);margin-top:4px;text-align:center;line-height:1.3}
+.tlt{font-size:8px;color:var(--text2);margin-top:2px;font-family:'Courier New',monospace}
+input[type=text],input[type=date],select,textarea{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-size:16px;font-family:inherit;background:#fff}
+textarea{resize:vertical}
+@media(max-width:680px){
+  #sidebar{display:none}
+  #mnav{display:flex!important}
+  body{padding-bottom:60px}
+  #main{height:calc(100vh - 60px)}
+  #body{padding:12px 12px}
+  th:nth-child(n+5),td:nth-child(n+5){display:none}
+  .mni{font-size:8px;padding:6px 2px}
+  .mni span:first-child{font-size:16px}
+  table{font-size:11px}
+  th{padding:6px 8px;font-size:9px}
+  td{padding:5px 8px}
+  .card-num{font-size:24px}
+  .cards{grid-template-columns:repeat(3,1fr)}
+  #inbox-input{min-height:100px;font-size:16px}
+  .fbar select,.fbar input{font-size:16px}
+  .btn{font-size:12px;padding:8px 14px}
+  .btn.pri{padding:10px 18px}
+  #modal{width:96vw;max-height:92vh}
+  .tblw{max-height:calc(100vh - 180px)!important}
+}
+#mnav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink);z-index:100;border-top:1px solid rgba(255,255,255,.07)}
+.mni{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;color:rgba(255,255,255,.35);font-size:9px;cursor:pointer;padding:7px 0;border:none;background:none;font-family:inherit}
+.mni.on{color:var(--accent)}
+.mni span:first-child{font-size:17px;line-height:1}
+</style>
+<script>
+// Redirect to login if no API key
+(function(){
+  var k = localStorage.getItem('ai_key') || '';
+  if(!k || !k.startsWith('sk-ant-')){
+    window.location.href = 'index.html';
+  }
+})();
+</script>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="logo"><div class="logo-t">YUAN · PM</div><div class="logo-s">HW PROJECT TRACKER</div></div>
+  <div class="sb-sec">views</div>
+  <button class="sb-btn on" id="nb-dash" onclick="go('dash')">◈ &nbsp;Dashboard</button>
+  <button class="sb-btn" id="nb-list" onclick="go('list')">≡ &nbsp;開案清單</button>
+  <button class="sb-btn" id="nb-pre"  onclick="go('pre')">◎ &nbsp;前期需求</button>
+  <button class="sb-btn" id="nb-inbox" onclick="go('inbox')">✎ &nbsp;快速 Inbox</button>
+  <div class="sb-sec">data</div>
+  <button class="sb-btn" onclick="syncGS()">↻ &nbsp;Google Sheets 同步</button>
+  <button class="sb-btn" onclick="document.getElementById('xlinp').click()">📂 &nbsp;載入 Excel</button>
+  <button class="sb-btn" onclick="exportXL()">💾 &nbsp;匯出 Excel</button>
+  <button class="sb-btn" onclick="showConfig()">⚙ &nbsp;AI 設定 <span id="ai-ind" style="margin-left:auto;font-size:9px;color:rgba(255,255,255,.25)">○</span></button>
+  <input type="file" id="xlinp" accept=".xlsx,.xls" style="display:none" onchange="loadXL(event)">
+  <div class="sb-foot">
+    Google Sheets 連結<br>
+    <a id="gslbl" onclick="setGS()">點此設定</a>
+    <div id="gs-st"></div>
+  </div>
+</nav>
+
+<div id="mnav">
+  <button class="mni on" id="mn-dash" onclick="go('dash')"><span>◈</span>總覽</button>
+  <button class="mni" id="mn-list" onclick="go('list')"><span>≡</span>開案</button>
+  <button class="mni" id="mn-pre"  onclick="go('pre')"><span>◎</span>前期</button>
+  <button class="mni" id="mn-inbox" onclick="go('inbox')"><span>✎</span>Inbox</button>
+  <button class="mni" onclick="syncGS()"><span>↻</span>同步</button>
+  <button class="mni" onclick="showConfig()"><span>⚙</span>設定</button>
+</div>
+
+<div id="main">
+  <div id="hdr">
+    <div><div class="hdr-title" id="htitle">Dashboard</div><div class="hdr-sub" id="hsub">專案總覽</div></div>
+    <div class="hdr-r">
+      <span id="dsrc" style="font-size:10px;color:var(--text3)">內建資料</span>
+      <button class="btn pri" onclick="newProj()">+ 新增開案</button>
+    </div>
+  </div>
+  <div id="body">
+
+    <div class="pg on" id="pg-dash">
+      <div class="cards" id="stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div><div class="sec-t">依類別</div><div id="catbars"></div></div>
+        <div><div class="sec-t">Janet 的案子</div><div id="mycases"></div></div>
+      </div>
+      <div class="sec-t">本週更新</div><div id="weekupd"></div>
+    </div>
+
+    <div class="pg" id="pg-list">
+      <div class="fbar">
+        <input id="fq" placeholder="🔍 搜尋型號、編號、人員..." oninput="renderList()">
+        <select id="fcat" onchange="renderList()"><option value="">全部類別</option></select>
+        <select id="fst"  onchange="renderList()"><option value="">全部狀態</option><option>開案</option><option>改版</option><option>待開案</option></select>
+        <select id="ftp"  onchange="renderList()"><option value="">標準/客製</option><option>標準</option><option>客製品</option></select>
+        <select id="fpm"  onchange="renderList()"><option value="">全部 PM</option></select>
+        <select id="fhw"  onchange="renderList()"><option value="">全部 HW</option></select>
+        <select id="ft5"  onchange="renderList()"><option value="">全部</option><option value="v">⭐ Top5</option></select>
+        <span class="cnt" id="lcnt"></span>
+      </div>
+      <div class="tblw" style="max-height:calc(100vh - 210px);overflow-y:auto">
+        <table><thead><tr>
+          <th>開案編號</th><th>型號</th><th>類別</th><th>型態</th>
+          <th>PM</th><th>HW</th><th>狀態</th><th>⭐</th>
+        </tr></thead><tbody id="ltbody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="pg" id="pg-pre">
+      <div class="fbar">
+        <input id="pfq" placeholder="🔍 搜尋..." oninput="renderPre()">
+        <select id="pfst" onchange="renderPre()"><option value="">全部狀態</option><option>待處理</option><option>進行中</option><option>已完成</option><option>已轉開案</option><option>暫緩</option></select>
+      </div>
+      <div id="prelist"></div>
+      <button class="btn pri" style="margin-top:8px" onclick="newPre()">+ 新增前期需求</button>
+    </div>
+
+    <div class="pg" id="pg-inbox">
+      <div style="max-width:640px">
+        <div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:14px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+            隨手貼入任何格式的文字：記事本、mail 內容、口語描述都可以。<br>
+            <span style="color:var(--text3);font-size:11px">例：SC5C0 開案 3/10 兩週 ／ PD576 PCBA 裝UB700G HID IC ／ Layout 4/9 Janet</span>
+          </div>
+          <textarea id="inbox-input" rows="6" placeholder="貼上文字或隨手記錄..." style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;line-height:1.6"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+            <button class="btn pri" onclick="inboxParse()" id="inbox-btn">✦ AI 解析</button>
+            <button class="btn" onclick="document.getElementById('inbox-input').value='';document.getElementById('inbox-result').innerHTML=''">清除</button>
+            <span id="inbox-status" style="font-size:11px;color:var(--text3)"></span>
+          <div id="debug-panel" style="margin-top:10px;padding:8px 10px;background:#f5f3ee;border:1px solid #d8d4cb;border-radius:6px;font-size:11px;font-family:monospace;color:#333;display:none"></div>
+          <button onclick="showDebug()" style="font-size:10px;color:#aaa;border:none;background:none;cursor:pointer;padding:4px 0">除錯資訊</button>
+          </div>
+        </div>
+        <div id="inbox-result"></div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:600">INBOX 暫存區 <span id="inbox-queue-cnt"></span></div>
+          <div id="inbox-queue"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="ov" onclick="if(event.target===this)closeM()">
+  <div id="modal">
+    <div class="mhdr">
+      <div><div class="mid" id="mid"></div><div class="mtitle" id="mtitle"></div></div>
+      <div class="mcls" onclick="closeM()">×</div>
+    </div>
+    <div class="mbody" id="mbody"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── DATA ──────────────────────────────────────
+const INIT = {"projects": [{"id": "RF-250045", "model": "2×HDMI2.0 / 2×12G-SDI to Holoscan", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無指定", "pm": "Helix", "hw": "Peter Hsieh", "layout": "11/26", "fab": "01/15", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250049", "model": "2×HDMI2.0/12G-SDI to HSB", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "無指定", "pm": "Helix", "hw": "Peter", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250005", "model": "CXP20 to HDMI2.0 EVB", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無", "pm": "Asta", "hw": "Howard Liu", "layout": "04/09", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250015", "model": "SC400N1 MC SDI (寬溫)", "ver": "V11", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Micheline", "pm": "Janet", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250026", "model": "SC400N2-L HDMI", "ver": "V11", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Micheline", "pm": "Janet", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250017", "model": "SC550N1 FULL", "ver": "V14E", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Micheline", "pm": "Janet", "hw": "Hugh", "layout": "02/13", "fab": "02/26", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250017", "model": "SC550N2-L HDMI", "ver": "V2.1E", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Micheline", "pm": "Janet", "hw": "Hugh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250017", "model": "SC550N4 HDMI", "ver": "V13D", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Micheline", "pm": "Janet", "hw": "Hugh", "layout": "", "fab": "01/26", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250014", "model": "SC550N1 M2 HDMI", "ver": "V32E", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Emma", "pm": "Stephen/Janet", "hw": "Hugh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250013", "model": "SC5C0N1-L", "ver": "V24E", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Annie", "pm": "Janet", "hw": "Hugh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250021", "model": "SC6F0N1 HDMI2.0 Ultra", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "", "pm": "Stephen", "hw": "Watson", "layout": "06/18", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250008", "model": "SC700 N1 FULL (AIO)", "ver": "V21", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Kelly", "pm": "Asta", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250022", "model": "SC710N2 M2 HDMI2.0", "ver": "V30", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Emma", "pm": "Janet", "hw": "Frank Chien", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250020", "model": "SC710N2-L HDMI2", "ver": "V40", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "無指定", "pm": "Janet", "hw": "Allen", "layout": "02/25", "fab": "02/26", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250052", "model": "SC750N1-L DP1.4a DSC", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "不指定", "pm": "Janet", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250023", "model": "SC750N1O1-L 12G-SDI Genlock", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無指定", "pm": "Stephen", "hw": "Peter Hsieh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250043", "model": "SC760N2O2 12G-SDI & HDMI2.0/DP1.2 DB", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無指定", "pm": "Stephen", "hw": "Peter Hsieh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250007", "model": "UB570G PRO HDMI2 HDR HID", "ver": "V20", "cat": "Capture", "type": "客製品", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Kelly", "pm": "Stephen", "hw": "Allen Lee", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250023", "model": "UB575ST AIO", "ver": "V12", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Wendy", "pm": "Janet", "hw": "Hugh", "layout": "", "fab": "01/14", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250031", "model": "UB576G 12G-SDI", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無指定", "pm": "Janet", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250056", "model": "UB579E N1 DP-ALT/HDMI2.0 cross", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Hugh", "layout": "01/02", "fab": "02/04", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250047", "model": "UB579E N1 HDMI2.0", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Hugh", "layout": "", "fab": "01/14", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250016", "model": "UB579E N2 HDMI2.0", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Hugh", "layout": "07/16", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250041", "model": "UB579E N4 HDMI2.0", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Hugh", "layout": "10/07", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250037", "model": "UB579G HDMI2.0", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Kelly", "pm": "Janet", "hw": "Allen", "layout": "12/02", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250033", "model": "UB700 12G-SDI/HDMI2.0", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "", "top5": "v", "trello": "", "sales": "無指定", "pm": "Janet", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250012", "model": "UB700E", "ver": "V15", "cat": "Capture", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250038", "model": "UB700G HDMI2.1-L HID", "ver": "V10", "cat": "Capture", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Kelly", "pm": "Janet", "hw": "Frank Chien", "layout": "02/24", "fab": "02/26", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250036", "model": "UB705G HDMI2.1", "ver": "V10", "cat": "Capture", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "無指定", "pm": "Stephen", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250013 / RF-250039", "model": "UB720G HDMI2.0", "ver": "", "cat": "", "type": "標準", "status": "", "whiteboard": "v", "top5": "", "trello": "", "sales": "Kelly", "pm": "Janet", "hw": "Peter", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-200070", "model": "12G-SDI Board (AUO)", "ver": "", "cat": "Converter", "type": "客製品", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250042", "model": "12G-SDI/HDMI2.0 to 12G-SDI/HDMI2.0-S", "ver": "V10", "cat": "Converter", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Paul li", "pm": "Janet", "hw": "Frank Chien", "layout": "01/08", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250002", "model": "HDMI to SDI ME5 V2.0 (VPC-HS5STD PCBA)", "ver": "V20", "cat": "Converter", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Paul Li", "pm": "Stephen", "hw": "Allen", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250010", "model": "Theatrixx DP2QSDI Converter", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "", "top5": "", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-250019", "model": "AVP6G0N1 IP to UVC", "ver": "V10", "cat": "AV over IP", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul Li", "pm": "Stephen", "hw": "Hugh", "layout": "05/08", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250017", "model": "AVP6G0N1 IP to UVC/HDMI2.0", "ver": "V10", "cat": "AV over IP", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul Li", "pm": "Stephen", "hw": "Hugh", "layout": "10/28", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250011", "model": "SC6G0N1 IP to UVC/HDMI2.0", "ver": "V21", "cat": "AV over IP", "type": "標準", "status": "改版", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul Li", "pm": "Stephen/Janet", "hw": "Hugh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250051", "model": "Dante AV Ultra Hybrid", "ver": "V10", "cat": "AV over IP", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "不指定", "pm": "Janet", "hw": "Hugh", "layout": "06/18", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250040", "model": "HDMI2.0 to SDVoE Plus", "ver": "V10", "cat": "AV over IP", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "不指定", "pm": "Janet", "hw": "Hugh", "layout": "11/19", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250035", "model": "Lumens OIP-N60T", "ver": "V10", "cat": "AV over IP", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Paul", "pm": "Janet", "hw": "Hugh", "layout": "11/14", "fab": "11/14", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250006", "model": "SDVoE to HDMI2.0 / HDMI2.0 to SDVoE / SDVoE to 12G SDI", "ver": "V15", "cat": "AV over IP", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "-", "pm": "Stephen", "hw": "Hugh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250050", "model": "Y's AV L1 TX/RX (AV over IP)", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "", "top5": "", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-250053", "model": "CV850 X+HDMI 2.0 V2", "ver": "V20", "cat": "Camera", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "不指定", "pm": "Stephen", "hw": "Allen", "layout": "", "fab": "02/05", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-240001", "model": "CV850C-08M586R ODM Camera", "ver": "V11", "cat": "Camera", "type": "客製品", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250027", "model": "CV850E UB3 WiFi-C8M678", "ver": "V10", "cat": "Camera", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Ophelia", "pm": "Stephen", "hw": "Frank Chien", "layout": "02/12", "fab": "02/13", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250025", "model": "EYE6N0-I MB及DB", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "v", "top5": "v", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "01/20", "fab": "02/11", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-250044", "model": "ARC6G0ECO (MB/TVI/MIPI/HDMI-DB)", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "v", "top5": "v", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-250046", "model": "GMSL to Holoscan", "ver": "V10", "cat": "Automotive", "type": "標準", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "無指定", "pm": "Stephen", "hw": "Edward", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250054", "model": "GMSL2 N4 to HSB (Quad)", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "v", "top5": "v", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "RF-250058", "model": "BriteMED 4K AD Board", "ver": "V10", "cat": "醫療", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Kelly", "pm": "Helix/Janet", "hw": "Peter Hsieh", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250062", "model": "Dual OV Analog to HSB EDQ", "ver": "V10", "cat": "醫療", "type": "客製品", "status": "開案", "whiteboard": "v", "top5": "v", "trello": "", "sales": "Paul li", "pm": "Annie Ho", "hw": "Hugh / Edward", "layout": "01/09", "fab": "02/06", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250018", "model": "EX-SDI to HDMI EVB", "ver": "V10", "cat": "醫療", "type": "標準", "status": "開案", "whiteboard": "", "top5": "", "trello": "", "sales": "無指定", "pm": "Helix", "hw": "Howard", "layout": "", "fab": "", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "PCN20250021", "model": "Holoscan Sensor Bridge / Multi to Holoscan DB", "ver": "V11", "cat": "醫療", "type": "標準", "status": "改版", "whiteboard": "v", "top5": "v", "trello": "", "sales": "無指定", "pm": "Helix", "hw": "Hugh / Edward", "layout": "11/26", "fab": "01/15", "etest": "尚未", "emi": "尚未", "note": "", "weekUpdate": ""}, {"id": "RF-250006", "model": "Multi 4K to Holoscan Sensor Bridge DB", "ver": "", "cat": "", "type": "", "status": "", "whiteboard": "", "top5": "", "trello": "", "sales": "", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "待開案", "model": "Nippon RAD 6G0 FHD Decoder", "ver": "", "cat": "AV over IP", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul li", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "待開案", "model": "Dempa UB576 AIO", "ver": "", "cat": "Capture", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Emma", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "待開案", "model": "MEDIAEDGE HDMI to SDI-S PCBA", "ver": "", "cat": "Converter", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul li", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "待開案", "model": "竹陞 Video Splitter", "ver": "", "cat": "Converter", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Paul", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "前期規劃", "model": "Reinmedical SDVoE Hybrid", "ver": "", "cat": "AV over IP", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Micheline", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}, {"id": "前期規劃", "model": "桓達科技 流量計FPGA PCB", "ver": "", "cat": "Platform", "type": "客製品", "status": "待開案", "whiteboard": "", "top5": "", "trello": "", "sales": "Kelly", "pm": "", "hw": "", "layout": "", "fab": "", "etest": "尚未", "emi": "", "note": "", "weekUpdate": ""}], "pre": [{"id": "PRE-001", "date": "2026-03-02", "srcType": "廠商會議", "company": "MediaTek (聯發科)", "summary": "Genio Ultra SoC 合作洽談，探討 IoT 端側 AI 市場合作機會", "followup": "1. 請 MTK 提供 Genio Ultra 詳細規格文件\n2. 等 MTK 與 NV 內部確認合作規則後告知", "deadline": "2026-Q2", "progress": "", "sales": "Frank/Jacky", "pm": "Janet", "pstatus": "進行中", "relatedId": "", "note": "會議記錄已建立"}, {"id": "PRE-002", "date": "2026-03-02", "srcType": "廠商會議", "company": "MediaTek (聯發科) / 工研院", "summary": "工研院國網 AI 加速卡標案，指定採用 MT8894，M.2 or PCIe 設計", "followup": "Steven 接洽 RD 確認規格細節，準備正式提案", "deadline": "2026-06", "progress": "", "sales": "", "pm": "Steven/Janet", "pstatus": "進行中", "relatedId": "", "note": "無競爭對手，高成功率"}, {"id": "PRE-003", "date": "2026-02-24", "srcType": "Sales 來信", "company": "TTX", "summary": "SC6F0 N1 Ultra 只保留重點 IO，塞入 Dante Ultra 大小殼 (100×130mm)，保留 HDMI2、2x 網孔、Type-C，其餘保留擴充接頭", "followup": "規劃方塊圖，確認 IO 配置及第二層子板設計方式", "deadline": "", "progress": "", "sales": "Paul", "pm": "Janet", "pstatus": "待處理", "relatedId": "RF-250021", "note": ""}]};
+let projects = [], pre = [];
+let AI_KEY = localStorage.getItem('ai_key') || '';
+let SCRIPT_URL = localStorage.getItem('script_url') || '';
+
+function mmdd(){var d=new Date();return String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+function yyyymmdd(){var d=new Date();return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');}
+
+function showConfig(){
+  document.getElementById('mid').textContent='\u8a2d\u5b9a';
+  document.getElementById('mtitle').textContent='AI \u8a2d\u5b9a';
+  var html='<div style="display:grid;gap:14px">';
+  html+='<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px">Anthropic API Key</label>';
+  html+='<input type="password" id="cfg-key" value="'+AI_KEY+'" placeholder="sk-ant-..." style="width:100%">';
+  html+='<div style="font-size:10px;color:var(--text3);margin-top:3px">\u586b\u5165\u5f8c AI \u89e3\u6790\u4f7f\u7528 Claude\uff0c\u5426\u5247\u7528\u672c\u6a5f\u898f\u5247</div></div>';
+  html+='<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:4px">Apps Script URL (\u5beb\u5165 Google Sheets)</label>';
+  html+='<input type="text" id="cfg-url" value="'+SCRIPT_URL+'" placeholder="https://script.google.com/macros/s/..." style="width:100%"></div>';
+  html+='<div style="display:flex;gap:8px"><button class="btn pri" onclick="saveConfig()">\u2713 \u5132\u5b58</button><button class="btn" onclick="closeM()">\u53d6\u6d88</button></div></div>';
+  document.getElementById('mbody').innerHTML=html;
+  openM();
+}
+function saveConfig(){
+  AI_KEY=document.getElementById('cfg-key').value.trim();
+  SCRIPT_URL=document.getElementById('cfg-url').value.trim();
+  localStorage.setItem('ai_key',AI_KEY);
+  localStorage.setItem('script_url',SCRIPT_URL);
+  window.AI_KEY=AI_KEY; window.SCRIPT_URL=SCRIPT_URL;
+  var ind=document.getElementById('ai-ind');
+  if(ind){
+    if(AI_KEY&&SCRIPT_URL){ind.textContent='\u25cf AI+GS';ind.style.color='#4ade80';}
+    else if(AI_KEY){ind.textContent='\u25cf AI';ind.style.color='#fbbf24';}
+    else{ind.textContent='\u25cb';ind.style.color='rgba(255,255,255,.25)';}
+  }
+  closeM();
+}
+
+// Sheet row map: model -> xlsx row (1-indexed)
+var SR={};
+(function(){
+  var d=[
+    [5,'2\xd7HDMI2.0 / 2\xd712G-SDI to Holoscan'],[6,'2\xd7HDMI2.0/12G-SDI to HSB'],
+    [7,'CXP20 to HDMI2.0 EVB'],[8,'SC400N1 MC SDI (\u5bec\u6eab)'],[9,'SC400N2-L HDMI'],
+    [10,'SC550N1 FULL'],[11,'SC550N2-L HDMI'],[12,'SC550N4 HDMI'],[13,'SC550N1 M2 HDMI'],
+    [14,'SC5C0N1-L'],[15,'SC6F0N1 HDMI2.0 Ultra'],[16,'SC700 N1 FULL (AIO)'],
+    [17,'SC710N2 M2 HDMI2.0'],[18,'SC710N2-L HDMI2'],[19,'SC750N1-L DP1.4a DSC'],
+    [20,'SC750N1O1-L 12G-SDI Genlock'],[21,'SC760N2O2 12G-SDI & HDMI2.0/DP1.2 DB'],
+    [22,'UB570G PRO HDMI2 HDR HID'],[23,'UB575ST AIO'],[24,'UB576G 12G-SDI'],
+    [25,'UB579E N1 DP-ALT/HDMI2.0 cross'],[26,'UB579E N1 HDMI2.0'],[27,'UB579E N2 HDMI2.0'],
+    [28,'UB579E N4 HDMI2.0'],[29,'UB579G HDMI2.0'],[30,'UB700 12G-SDI/HDMI2.0'],[31,'UB700E'],
+    [32,'UB700G HDMI2.1-L HID'],[33,'UB705G HDMI2.1'],[34,'UB720G HDMI2.0'],
+    [35,'Elgato 98530 TMR EVB'],[37,'12G-SDI Board (AUO)'],
+    [38,'12G-SDI/HDMI2.0 to 12G-SDI/HDMI2.0-S'],[39,'HDMI to SDI ME5 V2.0 (VPC-HS5STD PCBA)'],
+    [40,'Theatrixx DP2QSDI Converter'],[42,'AVP6G0N1 IP to UVC'],
+    [43,'AVP6G0N1 IP to UVC/HDMI2.0'],[44,'SC6G0N1 IP to UVC/HDMI2.0'],
+    [45,'SC6G0 AV Bridge'],[46,'Dante AV Ultra Hybrid'],[47,'HDMI2.0 to SDVoE Plus'],
+    [48,'Lumens OIP-N60T'],[49,'SDVoE to HDMI2.0 / HDMI2.0 to SDVoE / SDVoE to 12G SDI'],
+    [50,"Y's AV L1 TX/RX (AV over IP)"],[52,'CV850 X+HDMI 2.0 V2'],
+    [53,'CV850C-08M586R ODM Camera'],[54,'CV850E UB3 WiFi-C8M678'],[55,'CV850 HSB Camera'],
+    [56,'EYE6N0-I MB及DB'],[57,'CV850 OV64B DB EVB (\u4e2d\u79d1\u822a\u7a7a\u6240)'],
+    [59,'ARC6G0ECO (MB/TVI/MIPI/HDMI-DB)'],[61,'GMSL to Holoscan'],[62,'GMSL2 N4 to HSB (Quad)'],
+    [64,'BriteMED 4K AD Board'],[65,'Dual OV Analog to HSB EDQ'],[66,'EX-SDI to HDMI EVB'],
+    [67,'Holoscan Sensor Bridge / Multi to Holoscan DB'],
+    [68,'Multi 4K to Holoscan Sensor Bridge DB'],[69,'TTX SC6F0 N1 HDMI2 Ultra'],
+    [71,'Nippon RAD 6G0 FHD Decoder'],[72,'Dempa UB576 AIO'],
+    [73,'MEDIAEDGE HDMI to SDI-S PCBA'],[74,'\u7af9\u965b Video Splitter'],
+    [76,'Reinmedical SDVoE Hybrid'],[77,'\u6853\u9054\u79d1\u6280 \u6d41\u91cfFPGA PCB'],
+    [78,'AI FPV \u76ee\u6a19\u8ffd\u8e64\u6a21\u7d44\uff08\u7530\u5c4b\uff09'],
+    [79,'360\u5ea6 AI \u907f\u969c + ToF \u611f\u6e2c\u878d\u5408\u6a21\u7d44\uff08\u7530\u5c4b\uff09']
+  ];
+  d.forEach(function(x){SR[x[1]]=x[0];});
+})();
+
+async function gsWrite(sheet,row,col,val){
+  if(!SCRIPT_URL)return false;
+  try{var r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'write_cell',sheet:sheet,row:row,col:col,value:val})});var d=await r.json();return!!d.ok;}catch(e){return false;}
+}
+async function gsRead(sheet){
+  if(!SCRIPT_URL)return null;
+  try{var r=await fetch(SCRIPT_URL+'?action=read&sheet='+encodeURIComponent(sheet));var d=await r.json();return d.ok?d.data:null;}catch(e){return null;}
+}
+
+// Validate + apply AI updates to local data + Sheets
+async function applyUpdates(updates,statusEl){
+  var VS=['\u672a\u958b\u59cb','\u958b\u767c\u4e2d','\u6709\u624b\u7109','\u6709\u8a66\u7522','\u53ef\u9001\u6a23','\u53ef\u91cf\u5ea2','\u91cd\u65b0\u8a55\u4f30','\u6682\u505c','\u5f85\u958b\u6848','\u524d\u671f\u898f\u5283'];
+  var VT=['\u5c1a\u672a','Pass','Fail'];
+  var ok=0,fails=[];
+  var sheetData=null;
+  if(SCRIPT_URL&&updates.some(function(u){return(u.changes||[]).some(function(c){return c.field==='\u5099\u8a3b';});})){
+    statusEl.innerHTML='<span style="color:var(--gold)">\u8b80\u53d6\u73fe\u6709\u5099\u8a3b...</span>';
+    sheetData=await gsRead('\u958b\u6848\u6e05\u55ae');
+  }
+  for(var i=0;i<updates.length;i++){
+    var u=updates[i];
+    var p=projects.find(function(x){return x.model===u.model||x.id===u.id;});
+    var sr=SR[u.model];
+    for(var j=0;j<(u.changes||[]).length;j++){
+      var c=u.changes[j];
+      var val=c.value;
+      // \u5099\u8a3b\uff1a\u6c38\u9060\u7d2f\u52a0\uff0c\u65b0\u524d\u820a\u5f8c
+      if(c.field==='\u5099\u8a3b'){
+        var ex='';
+        if(sheetData&&sr)ex=String((sheetData[sr-1]||[])[22]||'').trim();
+        else if(p)ex=(p.note||'').trim();
+        val=ex?c.value+'\n'+ex:c.value;
+        if(p)p.note=val;
+      }
+      // \u968e\u6bb5\uff1a\u9a57\u8b49\u53ef\u9078\u5024
+      if(c.field==='\u968e\u6bb5'){
+        if(VS.indexOf(val)<0){fails.push(u.model+'\uff5c\u968e\u6bb5\u300c'+val+'\u300d\u4e0d\u5408\u6cd5');continue;}
+        if(p)p.stage=val;
+      }
+      // \u96fb\u6027/EMI\uff1a\u9a57\u8b49\u53ef\u9078\u5024
+      if(c.field==='\u96fb\u6027\u91cf\u6e2c'||c.field==='EMI Pre-Test'){
+        if(VT.indexOf(val)<0){fails.push(u.model+'\uff5c'+c.field+'\u300c'+val+'\u300d\u4e0d\u5408\u6cd5');continue;}
+        if(c.field==='\u96fb\u6027\u91cf\u6e2c'&&p)p.etest=val;
+        if(c.field==='EMI Pre-Test'&&p)p.emi=val;
+      }
+      if(c.field==='\u672c\u9031\u66f4\u65b0'&&p)p.weekUpdate=val;
+      if(c.field==='\u6700\u5f8c\u66f4\u65b0\u65e5'&&p)p.lastUpdate=val;
+      if(c.field==='layout'&&p)p.layout=val;
+      if(c.field==='\u9001\u6d17\u8a66\u7522'&&p)p.fab=val;
+      if(c.field==='\u65b0\u6599/\u6a23\u54c1'&&p)p.newParts=val;
+      if(SCRIPT_URL&&sr&&c.col){
+        var wrote=await gsWrite(u.sheet||'\u958b\u6848\u6e05\u55ae',sr,c.col,val);
+        if(wrote)ok++;else fails.push(u.model+'\uff5c'+c.field+' \u5beb\u5165\u5931\u6557');
+      }else if(SCRIPT_URL&&!sr){
+        fails.push('\u627e\u4e0d\u5230\u300c'+u.model+'\u300d\u5217\u4f4d\u7f6e');
+      }
+    }
+  }
+  save();fillFilters();renderDash();renderList();
+  if(!SCRIPT_URL){statusEl.innerHTML='<span style="color:var(--green)">\u2713 \u672c\u6a5f\u5df2\u66f4\u65b0</span>';}
+  else if(!fails.length){statusEl.innerHTML='<span style="color:var(--green)">\u2713 \u5df2\u5beb\u5165 Sheets ('+ok+' \u6b04)</span>';}
+  else{statusEl.innerHTML='<span style="color:var(--gold)">\u5b8c\u6210 '+ok+'\u6b04\uff0c\u6ce8\u610f\uff1a'+fails.join(' / ')+'</span>';}
+}
+
+let GS_URL = localStorage.getItem('gs_url') || '';
+
+// ── COLORS ────────────────────────────────────
+const CC = {Capture:'#1a3a5c','AV over IP':'#2d6a4f',Converter:'#7a5218',Camera:'#5c1a7a',Automotive:'#c8392b','醫療':'#1a5c5c',Platform:'#3a3a3a'};
+const CB = {Capture:'rgba(26,58,92,.1)','AV over IP':'rgba(45,106,79,.1)',Converter:'rgba(122,82,24,.1)',Camera:'rgba(92,26,122,.1)',Automotive:'rgba(200,57,43,.1)','醫療':'rgba(26,92,92,.1)',Platform:'rgba(58,58,58,.1)'};
+
+function cb(cat){return`<span class="cbadge" style="color:${CC[cat]||'#666'};background:${CB[cat]||'rgba(0,0,0,.06)'}">${cat||'—'}</span>`}
+function sb(s){const m={開案:['rgba(26,58,92,.12)','#1a3a5c'],改版:['rgba(201,150,12,.15)','#7a5800'],待開案:['rgba(200,57,43,.1)','#c8392b']};const[bg,tc]=m[s]||['rgba(0,0,0,.05)','#888'];return`<span class="badge" style="background:${bg};color:${tc}">${s||'—'}</span>`}
+function psb(s){const m={進行中:'#2d6a4f',待處理:'#8a6400',已完成:'#555',已轉開案:'#1a3a5c',暫緩:'#888'};return`<span class="badge" style="background:${(m[s]||'#888')}22;color:${m[s]||'#888'}">${s||'—'}</span>`}
+function fv(v){return v?`<span class="v">${v}</span>`:`<span class="e">—</span>`}
+
+// ── INIT ──────────────────────────────────────
+function init(){
+  try{ const s=localStorage.getItem('hwd'); if(s){const d=JSON.parse(s);projects=d.p;pre=d.r;} }catch(e){}
+  if(!projects||!projects.length){projects=INIT.projects;pre=INIT.pre;}
+  // Clean up any NOTE- entries that leaked into pre from old bug
+  pre = (pre||[]).filter(p => !p.id || !String(p.id).startsWith('NOTE-'));
+  save();
+  GS_URL=localStorage.getItem('gs_url')||'';
+  document.getElementById('gslbl').textContent=GS_URL?'已設定（點此更改）':'點此設定';
+  fillFilters();renderDash();renderList();renderPre();
+  // Auto-sync from Google Sheets on first load
+  if(GS_URL) syncGS();
+  // Init AI indicator
+  AI_KEY=localStorage.getItem('ai_key')||'';
+  SCRIPT_URL=localStorage.getItem('script_url')||'';
+  window.AI_KEY=AI_KEY; window.SCRIPT_URL=SCRIPT_URL;
+  var ind=document.getElementById('ai-ind');
+  if(ind){
+    if(AI_KEY&&SCRIPT_URL){ind.textContent='\u25cf AI+GS';ind.style.color='#4ade80';}
+    else if(AI_KEY){ind.textContent='\u25cf AI';ind.style.color='#fbbf24';}
+  }
+}
+function save(){try{localStorage.setItem('hwd',JSON.stringify({p:projects,r:pre}));}catch(e){}}
+
+// ── NAV ───────────────────────────────────────
+function go(p){
+  document.querySelectorAll('.pg').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('[id^="nb-"],[id^="mn-"]').forEach(e=>e.classList.remove('on'));
+  document.getElementById('pg-'+p).classList.add('on');
+  document.getElementById('nb-'+p)?.classList.add('on');
+  document.getElementById('mn-'+p)?.classList.add('on');
+  const T={dash:'Dashboard',list:'開案清單',pre:'前期需求追蹤',inbox:'快速 Inbox'};
+  const S={dash:'專案總覽',list:'全部進行中開案',pre:'Pre-Development Inquiry',inbox:'隨手記錄 · AI 解析'};
+  document.getElementById('htitle').textContent=T[p];
+  document.getElementById('hsub').textContent=S[p];
+}
+
+// ── FILTERS ───────────────────────────────────
+function fillFilters(){
+  const cats=[...new Set(projects.map(p=>p.cat).filter(Boolean))];
+  const pms=[...new Set(projects.map(p=>p.pm).filter(Boolean))].sort();
+  const hws=[...new Set(projects.map(p=>p.hw).filter(Boolean))].sort();
+  const fill=(id,arr)=>{
+    const el=document.getElementById(id);if(!el)return;
+    const v=el.value;
+    el.innerHTML=el.options[0].outerHTML+arr.map(x=>`<option>${x}</option>`).join('');
+    el.value=arr.includes(v)?v:'';
+  };
+  fill('fcat',cats);fill('fpm',pms);fill('fhw',hws);
+}
+function filtered(){
+  const q=(document.getElementById('fq')?.value||'').toLowerCase();
+  const cat=document.getElementById('fcat')?.value||'';
+  const st=document.getElementById('fst')?.value||'';
+  const tp=document.getElementById('ftp')?.value||'';
+  const pm=document.getElementById('fpm')?.value||'';
+  const hw=document.getElementById('fhw')?.value||'';
+  const t5=document.getElementById('ft5')?.value||'';
+  return projects.filter(p=>{
+    if(q&&![p.id,p.model,p.pm,p.hw,p.sales,p.note].join(' ').toLowerCase().includes(q))return false;
+    if(cat&&p.cat!==cat)return false;
+    if(st&&p.status!==st)return false;
+    if(tp&&p.type!==tp)return false;
+    if(pm&&!p.pm.includes(pm))return false;
+    if(hw&&!p.hw.includes(hw))return false;
+    if(t5&&p.top5!=='v')return false;
+    return true;
+  });
+}
+
+// ── DASHBOARD ─────────────────────────────────
+function renderDash(){
+  const act=projects.filter(p=>p.status==='開案'||p.status==='改版');
+  const t5=projects.filter(p=>p.top5==='v');
+  const jan=projects.filter(p=>p.pm&&p.pm.includes('Janet'));
+  const pend=projects.filter(p=>p.status==='待開案');
+  document.getElementById('stats').innerHTML=`
+    <div class="card blue"><div class="card-lbl">進行中</div><div class="card-num">${act.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">開案+改版</div></div>
+    <div class="card red"><div class="card-lbl">Top 5</div><div class="card-num">${t5.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">優先追蹤</div></div>
+    <div class="card green"><div class="card-lbl">Janet</div><div class="card-num">${jan.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">我的案子</div></div>
+    <div class="card gold"><div class="card-lbl">待開案</div><div class="card-num">${pend.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">規劃中</div></div>
+    <div class="card"><div class="card-lbl">前期需求</div><div class="card-num">${pre.length}</div><div style="font-size:10px;color:var(--text3);margin-top:3px">追蹤中</div></div>`;
+  const cats={};projects.filter(p=>p.status&&p.status!=='待開案').forEach(p=>{if(p.cat)cats[p.cat]=(cats[p.cat]||0)+1;});
+  const mx=Math.max(1,...Object.values(cats));
+  document.getElementById('catbars').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">${cb(c)}<b style="font-size:11px">${n}</b></div>
+      <div style="background:var(--line);border-radius:2px;height:4px">
+        <div style="background:${CC[c]||'#888'};height:100%;border-radius:2px;width:${n/mx*100}%"></div>
+      </div>
+    </div>`).join('');
+  document.getElementById('mycases').innerHTML=jan.slice(0,8).map(p=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="showP(${idx(p)})">
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.model}</div>
+      <div style="font-size:9px;color:var(--text3);font-family:'Courier New',monospace">${p.id}</div></div>${sb(p.status)}</div>`).join('')
+    +(jan.length>8?`<div style="font-size:11px;color:var(--text3);padding-top:6px">+${jan.length-8} 個</div>`:'');
+  const upd=projects.filter(p=>p.weekUpdate);
+  document.getElementById('weekupd').innerHTML=upd.length
+    ?`<div class="tblw"><table><thead><tr><th>編號</th><th>型號</th><th>本週更新</th></tr></thead><tbody>
+      ${upd.map(p=>`<tr class="row" onclick="showP(${idx(p)})"><td class="tid">${p.id}</td><td>${p.model}</td><td style="font-size:11px;color:var(--text2)">${p.weekUpdate}</td></tr>`).join('')}
+      </tbody></table></div>`
+    :`<div style="padding:14px;background:#fff;border:1px solid var(--line);border-radius:7px;font-size:12px;color:var(--text3);text-align:center">本週尚無更新</div>`;
+}
+
+// ── LIST ──────────────────────────────────────
+function renderList(){
+  const r=filtered();
+  document.getElementById('lcnt').textContent=r.length+' 筆';
+  document.getElementById('ltbody').innerHTML=r.map(p=>`
+    <tr class="row" onclick="showP(${idx(p)})">
+      <td class="tid">${p.id}</td>
+      <td><div class="tmod">${p.model}</div><div class="tver">${p.ver}</div></td>
+      <td>${cb(p.cat)}</td>
+      <td style="font-size:11px;color:var(--text3)">${p.type||'—'}</td>
+      <td style="font-size:12px">${p.pm||'—'}</td>
+      <td style="font-size:12px">${p.hw||'—'}</td>
+      <td>${sb(p.status)}</td>
+      <td style="text-align:center">${p.top5==='v'?'<span style="color:var(--accent)">★</span>':''}</td>
+    </tr>`).join('')||'<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--text3)">無符合條件</td></tr>';
+}
+
+// ── PRE-REQ ───────────────────────────────────
+function renderPre(){
+  const q=(document.getElementById('pfq')?.value||'').toLowerCase();
+  const st=document.getElementById('pfst')?.value||'';
+  const r=pre.filter(p=>{
+    if(!p.id || String(p.id).startsWith('NOTE-')) return false; // never show notes here
+    if(q&&![p.company,p.summary,p.pm].join(' ').toLowerCase().includes(q))return false;
+    if(st&&p.pstatus!==st)return false;
+    return true;
+  });
+  document.getElementById('prelist').innerHTML=r.map((p,i)=>`
+    <div class="pcard" onclick="showPre(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:7px">
+        <div><div style="font-size:9px;color:var(--text3);font-family:'Courier New',monospace">${p.id} · ${p.srcType} · ${p.date}</div>
+        <div style="font-size:14px;font-weight:700;margin-top:2px">${p.company}</div></div>${psb(p.pstatus)}
+      </div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px">${p.summary}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${p.pm?`<span style="font-size:10px;background:rgba(26,58,92,.1);color:#1a3a5c;padding:2px 7px;border-radius:10px">PM: ${p.pm}</span>`:''}
+        ${p.deadline?`<span style="font-size:10px;color:var(--text3)">期限: ${p.deadline}</span>`:''}
+        ${p.relatedId?`<span style="font-size:10px;color:var(--accent);font-family:'Courier New',monospace">→ ${p.relatedId}</span>`:''}
+      </div>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--text3);padding:14px">無符合條件</div>';
+}
+
+// ── HELPERS ───────────────────────────────────
+function idx(p){return projects.indexOf(p)}
+
+// ── DETAIL MODAL ──────────────────────────────
+function showP(i){
+  const p=projects[i];if(!p)return;
+  document.getElementById('mid').textContent=p.id;
+  document.getElementById('mtitle').textContent=p.model;
+  // Milestone: correct order, date-based done logic
+  const today = new Date(); today.setHours(0,0,0,0);
+  const parseDate = (s) => {
+    if(!s || s==='尚未' || s==='—') return null;
+    // formats: MM/DD, YYYY-MM-DD, M/D
+    const m1 = s.match(/^(\d{1,2})\/(\d{1,2})$/);
+    if(m1){ const d=new Date(today.getFullYear(),parseInt(m1[1])-1,parseInt(m1[2])); return d; }
+    const m2 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if(m2){ return new Date(parseInt(m2[1]),parseInt(m2[2])-1,parseInt(m2[3])); }
+    return null;
+  };
+  const isDone = (d) => { const dt=parseDate(d); return dt && dt <= today; };
+  const isPlanned = (d) => { const dt=parseDate(d); return dt && dt > today; };
+
+  const tl=[
+    {l:'電路設計', d:p.sch},
+    {l:'機構設計', d:p.mechDesign},
+    {l:'Layout',   d:p.layout},
+    {l:'送洗/試產', d:p.fab},
+    {l:'電性量測', d:p.etest},
+    {l:'EMI',      d:p.emi},
+  ].filter(t => t.d && t.d !== '' && t.d !== '尚未');
+
+  // If no milestones filled, show all as empty placeholders
+  const tlShow = tl.length ? tl : [
+    {l:'電路設計',d:''},{l:'Layout',d:''},{l:'送洗/試產',d:''},{l:'電性量測',d:''},{l:'EMI',d:''}
+  ];
+
+  const dotClass = (d) => isDone(d) ? 'done' : isPlanned(d) ? 'planned' : '';
+  const lineClass = (d) => isDone(d) ? 'done' : '';
+
+  document.getElementById('mbody').innerHTML=`
+    <style>
+      .tld.planned{background:#d4a017;border-color:#d4a017}
+      .tll.planned{background:rgba(212,160,23,.3)}
+    </style>
+    <div class="msec"><div class="msec-t">基本資訊</div>
+      <div class="mgrid">
+        <div class="mf"><label>版本</label>${fv(p.ver)}</div>
+        <div class="mf"><label>類別</label>${cb(p.cat)}</div>
+        <div class="mf"><label>型態</label>${fv(p.type)}</div>
+        <div class="mf"><label>狀態</label>${sb(p.status)}</div>
+      </div>
+    </div>
+    <div class="msec"><div class="msec-t">人員</div>
+      <div class="mgrid">
+        <div class="mf"><label>業務</label>${fv(p.sales)}</div>
+        <div class="mf"><label>PM</label>${fv(p.pm)}</div>
+        <div class="mf"><label>HW</label>${fv(p.hw)}</div>
+      </div>
+    </div>
+    <div class="msec"><div class="msec-t">追蹤</div>
+      <div class="mgrid">
+        <div class="mf"><label>Top5</label>${p.top5==='v'?'<span style="color:var(--accent)">★ 是</span>':fv('—')}</div>
+        <div class="mf"><label>白板</label>${fv(p.whiteboard||'—')}</div>
+        <div class="mf"><label>Trello</label>${fv(p.trello||'—')}</div>
+      </div>
+    </div>
+    <div class="msec"><div class="msec-t">時程里程碑</div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:8px">
+        <span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>已完成</span>
+        <span style="display:inline-flex;align-items:center;gap:3px;margin-right:10px"><span style="width:8px;height:8px;border-radius:50%;background:#d4a017;display:inline-block"></span>計畫中</span>
+        <span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:var(--line);display:inline-block"></span>未填</span>
+      </div>
+      <div class="tl">
+        ${tlShow.map((t,j)=>`<div style="display:flex;align-items:center">
+          <div class="tli">
+            <div class="tld ${dotClass(t.d)}"></div>
+            <div class="tln">${t.l}</div>
+            <div class="tlt">${t.d||''}</div>
+          </div>
+          ${j<tlShow.length-1?`<div class="tll ${lineClass(t.d)}"></div>`:''}</div>`).join('')}
+      </div>
+    </div>
+    ${p.note||p.weekUpdate?`<div class="msec"><div class="msec-t">備註</div>
+      ${p.note?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">${p.note}</div>`:''}
+      ${p.weekUpdate?`<div style="font-size:12px;color:var(--accent);border-left:3px solid var(--accent);padding-left:8px">本週：${p.weekUpdate}</div>`:''}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="editP(${i})">✏ 編輯</button>
+      <button class="btn" onclick="closeM()">關閉</button>
+    </div>`;
+  openM();
+}
+
+function showPre(i){
+  const p=pre[i];if(!p)return;
+  document.getElementById('mid').textContent=p.id+' · '+p.srcType;
+  document.getElementById('mtitle').textContent=p.company;
+  document.getElementById('mbody').innerHTML=`
+    <div class="msec"><div class="msec-t">需求摘要</div><div style="font-size:13px;line-height:1.7">${p.summary}</div></div>
+    <div class="msec"><div class="msec-t">Follow-up</div><div style="font-size:12px;line-height:1.8;color:var(--text2);white-space:pre-line">${p.followup||'—'}</div></div>
+    <div class="msec"><div class="msec-t">資訊</div>
+      <div class="mgrid">
+        <div class="mf"><label>日期</label><span class="v">${p.date}</span></div>
+        <div class="mf"><label>狀態</label>${psb(p.pstatus)}</div>
+        <div class="mf"><label>PM</label><span class="v">${p.pm||'—'}</span></div>
+        <div class="mf"><label>業務</label><span class="v">${p.sales||'—'}</span></div>
+        <div class="mf"><label>期限</label><span class="v">${p.deadline||'—'}</span></div>
+        <div class="mf"><label>關聯開案</label><span class="v" style="color:var(--accent)">${p.relatedId||'—'}</span></div>
+      </div>
+    </div>
+    ${p.progress?`<div class="msec"><div class="msec-t">最新進度</div><div style="font-size:12px;color:var(--text2)">${p.progress}</div></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="editPre(${i})">✏ 編輯</button>
+      <button class="btn" onclick="closeM()">關閉</button>
+    </div>`;
+  openM();
+}
+
+function openM(){document.getElementById('ov').classList.add('on')}
+function closeM(){document.getElementById('ov').classList.remove('on')}
+
+// ── EDIT ──────────────────────────────────────
+function inp(l,k,v,t='text'){return`<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">${l}</label><input type="${t}" id="e${k}" value="${(v||'').replace(/"/g,'&quot;')}"></div>`}
+function sel(l,k,v,opts){return`<div><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">${l}</label><select id="e${k}">${opts.map(o=>`<option${o===v?' selected':''}>${o}</option>`).join('')}</select></div>`}
+function ta(l,k,v){return`<div style="grid-column:1/-1"><label style="font-size:10px;color:var(--text3);display:block;margin-bottom:3px">${l}</label><textarea id="e${k}" rows="2">${v||''}</textarea></div>`}
+function g(k){return document.getElementById('e'+k)?.value||''}
+
+function editP(i){
+  const p=projects[i];
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      ${inp('型號','model',p.model)}${inp('版本','ver',p.ver)}
+      ${sel('類別','cat',p.cat,['Capture','AV over IP','Converter','Camera','Automotive','醫療','Platform'])}
+      ${sel('型態','type',p.type,['標準','客製品'])}
+      ${sel('狀態','status',p.status,['開案','改版','待開案'])}
+      ${inp('PM','pm',p.pm)}${inp('HW','hw',p.hw)}${inp('業務','sales',p.sales)}
+      ${inp('Layout','layout',p.layout)}${inp('送洗/試產','fab',p.fab)}
+      ${sel('Top5','top5',p.top5,['','v'])}${sel('白板','whiteboard',p.whiteboard,['','v'])}
+      ${ta('備註','note',p.note)}${ta('本週更新','weekUpdate',p.weekUpdate)}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="saveP(${i})">✓ 儲存</button>
+      <button class="btn" onclick="showP(${i})">取消</button>
+    </div>`;
+}
+function saveP(i){
+  const p=projects[i];
+  ['model','ver','cat','type','status','pm','hw','sales','layout','fab','top5','whiteboard','note','weekUpdate']
+    .forEach(k=>{const v=g(k);if(v!==undefined)p[k]=v;});
+  save();fillFilters();renderDash();renderList();showP(i);
+}
+
+function editPre(i){
+  const p=pre[i];
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      ${inp('公司','company',p.company)}${inp('日期','date',p.date,'date')}
+      ${inp('來源類型','srcType',p.srcType)}
+      ${sel('狀態','pstatus',p.pstatus,['待處理','進行中','已完成','已轉開案','暫緩'])}
+      ${inp('PM','pm',p.pm)}${inp('業務','sales',p.sales)}
+      ${inp('截止日','deadline',p.deadline)}${inp('關聯開案','relatedId',p.relatedId)}
+      ${ta('需求摘要','summary',p.summary)}${ta('Follow-up','followup',p.followup)}
+      ${ta('最新進度','progress',p.progress)}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="savePre(${i})">✓ 儲存</button>
+      <button class="btn" onclick="showPre(${i})">取消</button>
+    </div>`;
+}
+function savePre(i){
+  const p=pre[i];
+  ['company','date','srcType','pstatus','pm','sales','deadline','relatedId','summary','followup','progress']
+    .forEach(k=>{const v=g(k);if(v!==undefined)p[k]=v;});
+  save();renderPre();showPre(i);
+}
+
+// ── NEW ───────────────────────────────────────
+function newProj(){
+  document.getElementById('mid').textContent='新增開案';
+  document.getElementById('mtitle').textContent='';
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      ${inp('開案編號','nid','')}${inp('型號','nmodel','')}
+      ${inp('版本','nver','V10')}
+      ${sel('類別','ncat','Capture',['Capture','AV over IP','Converter','Camera','Automotive','醫療','Platform'])}
+      ${sel('型態','ntype','標準',['標準','客製品'])}
+      ${sel('狀態','nstatus','開案',['開案','改版','待開案'])}
+      ${inp('PM','npm','Janet')}${inp('HW','nhw','')}${inp('業務','nsales','')}
+      ${ta('備註','nnote','')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="saveNew()">✓ 新增</button>
+      <button class="btn" onclick="closeM()">取消</button>
+    </div>`;
+  openM();
+}
+function saveNew(){
+  const id=g('nid'),model=g('nmodel');
+  if(!id||!model){alert('編號和型號為必填');return;}
+  projects.unshift({id,model,ver:g('nver'),cat:g('ncat'),type:g('ntype'),status:g('nstatus'),pm:g('npm'),hw:g('nhw'),sales:g('nsales'),note:g('nnote'),top5:'',whiteboard:'',trello:'',layout:'',fab:'',etest:'',emi:'',weekUpdate:'',lastUpdate:new Date().toISOString().slice(0,10)});
+  save();fillFilters();renderDash();renderList();closeM();go('list');
+}
+function newPre(){
+  const nid='PRE-'+String(pre.length+1).padStart(3,'0');
+  document.getElementById('mid').textContent='新增前期需求';
+  document.getElementById('mtitle').textContent='';
+  document.getElementById('mbody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+      ${inp('編號','nid',nid)}${inp('日期','ndate',new Date().toISOString().slice(0,10),'date')}
+      ${inp('來源類型','nsrcType','')}${inp('公司/廠商','ncompany','')}
+      ${inp('PM','npm','Janet')}${inp('業務','nsales','')}
+      ${sel('狀態','npstatus','待處理',['待處理','進行中','已完成','已轉開案','暫緩'])}
+      ${inp('截止日','ndeadline','')}
+      ${ta('需求摘要','nsummary','')}${ta('Follow-up','nfollowup','')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn pri" onclick="saveNewPre()">✓ 新增</button>
+      <button class="btn" onclick="closeM()">取消</button>
+    </div>`;
+  openM();
+}
+function saveNewPre(){
+  const company=g('ncompany'),summary=g('nsummary');
+  if(!company||!summary){alert('公司和需求摘要為必填');return;}
+  pre.unshift({id:g('nid'),date:g('ndate'),srcType:g('nsrcType'),company,summary,followup:g('nfollowup'),deadline:g('ndeadline'),progress:'',sales:g('nsales'),pm:g('npm'),pstatus:g('npstatus'),relatedId:'',note:''});
+  save();renderPre();closeM();go('pre');
+}
+
+// ── GOOGLE SHEETS ─────────────────────────────
+function setGS(){
+  const u=prompt('貼上 Google Sheets CSV 連結\n（檔案→共用→發佈到網路→選sheet→CSV格式）：',GS_URL);
+  if(u===null)return;
+  GS_URL=u;localStorage.setItem('gs_url',u);
+  document.getElementById('gslbl').textContent=u?'已設定（點此更改）':'點此設定';
+  if(u)syncGS();
+}
+async function syncGS(){
+  if(!GS_URL){if(confirm('請先設定 Google Sheets CSV 連結，要現在設定嗎？'))setGS();return;}
+  const el=document.getElementById('gs-st');
+  if(!el)return;
+  el.innerHTML='<span style="color:rgba(255,200,0,.8)">同步中...</span>';
+  try{
+    const r=await fetch(GS_URL+'&cachebust='+Date.now());
+    if(!r.ok)throw new Error('無法存取（'+r.status+'），請確認共用設定');
+    const csv=await r.text();
+    const rows=csv.split('\n').map(row=>{
+      const cols=[];let cur='',inq=false;
+      for(let c of row){if(c==='"')inq=!inq;else if(c===','&&!inq){cols.push(cur.trim());cur='';}else cur+=c;}
+      cols.push(cur.trim());return cols;
+    });
+    const np=rows.slice(2).filter(r=>r[0]&&r[0].trim()&&!r[0].trim().startsWith('  ')&&!r[0].includes('以下')).map(r=>({
+      id:r[0]?.trim()||'',model:r[1]?.trim()||'',ver:r[2]?.trim()||'',cat:r[3]?.trim()||'',
+      type:r[4]?.trim()||'',status:r[5]?.trim()||'',whiteboard:r[6]?.trim()||'',
+      top5:r[7]?.trim()||'',trello:r[8]?.trim()||'',sales:r[9]?.trim()||'',
+      pm:r[10]?.trim()||'',hw:r[11]?.trim()||'',layout:r[15]?.trim()||'',
+      fab:r[16]?.trim()||'',etest:r[17]?.trim()||'',emi:r[19]?.trim()||'',
+      note:r[22]?.trim()||'',weekUpdate:r[23]?.trim()||'',lastUpdate:r[24]?.trim()||''
+    })).filter(p=>p.id&&p.model);
+    if(!np.length)throw new Error('解析不到資料，請確認 sheet 格式');
+    projects=np;save();fillFilters();renderDash();renderList();
+    el.innerHTML=`<span style="color:rgba(76,175,80,.8)">✓ ${np.length}筆 ${new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})}</span>`;
+    document.getElementById('dsrc').textContent='Google Sheets';
+  }catch(e){el.innerHTML=`<span style="color:rgba(220,80,60,.8)">✗ ${e.message}</span>`;}
+}
+
+// ── EXCEL LOAD ────────────────────────────────
+function loadXL(e){
+  const file=e.target.files[0];if(!file)return;
+  // Dynamically load SheetJS only when needed
+  const doLoad=()=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+        const ws=wb.Sheets['開案清單']||wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        const np=rows.slice(2).filter(r=>r[0]&&String(r[0]).trim()&&!String(r[0]).startsWith('  ')&&!String(r[0]).includes('以下')&&r[1]).map(r=>({id:String(r[0]).trim(),model:String(r[1]).trim(),ver:String(r[2]||''),cat:String(r[3]||''),type:String(r[4]||''),status:String(r[5]||''),whiteboard:r[6]?'v':'',top5:r[7]?'v':'',trello:r[8]?'v':'',sales:String(r[9]||''),pm:String(r[10]||''),hw:String(r[11]||''),layout:String(r[15]||''),fab:String(r[16]||''),etest:String(r[17]||''),emi:String(r[19]||''),note:String(r[22]||''),weekUpdate:String(r[23]||''),lastUpdate:String(r[24]||'')}));
+        projects=np;
+        const ws2=wb.Sheets['前期需求追蹤'];
+        if(ws2){const r2=XLSX.utils.sheet_to_json(ws2,{header:1,defval:''});pre=r2.slice(2).filter(r=>String(r[0]).startsWith('PRE-')).map(r=>({id:String(r[0]),date:String(r[1]),srcType:String(r[2]),company:String(r[3]),summary:String(r[4]),followup:String(r[5]),deadline:String(r[6]),progress:String(r[7]),sales:String(r[8]),pm:String(r[9]),pstatus:String(r[10]),relatedId:String(r[11]),note:String(r[12])}));}
+        save();fillFilters();renderDash();renderList();renderPre();
+        document.getElementById('dsrc').textContent=file.name;
+        alert('✓ 載入 '+np.length+' 筆');
+      }catch(err){alert('讀取失敗：'+err.message);}
+    };
+    r.readAsArrayBuffer(file);
+    e.target.value='';
+  };
+  if(typeof XLSX!=='undefined'){doLoad();return;}
+  const s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=doLoad;
+  s.onerror=()=>alert('無法載入 Excel 函式庫，請用 Google Sheets 同步');
+  document.head.appendChild(s);
+}
+
+// ── EXCEL EXPORT ──────────────────────────────
+function exportXL(){
+  const doExport = () => {
+    try {
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: 開案清單
+      const headers = ['開案編號','型號','版本','類別','型態','狀態','白板','Top5','Trello',
+        '業務','PM','HW工程師','機構','設計線路','機構設計','layout','送洗試產','電性量測',
+        '階段','EMI Pre-Test','新料/樣品','相關聯絡單','備註','本週更新','最後更新日'];
+      const rows = [headers];
+      projects.forEach(p => rows.push([
+        p.id, p.model, p.ver, p.cat, p.type, p.status,
+        p.whiteboard, p.top5, p.trello,
+        p.sales, p.pm, p.hw, p.mech||'', p.sch||'', p.mechDesign||'',
+        p.layout, p.fab, p.etest,
+        p.stage||'', p.emi, p.newParts||'', p.related||'',
+        p.note, p.weekUpdate, p.lastUpdate
+      ]));
+      const ws1 = XLSX.utils.aoa_to_sheet(rows);
+      // Column widths
+      ws1['!cols'] = [
+        {wch:16},{wch:36},{wch:8},{wch:12},{wch:8},{wch:8},
+        {wch:6},{wch:6},{wch:6},
+        {wch:10},{wch:12},{wch:12},{wch:10},{wch:10},{wch:10},
+        {wch:8},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10},{wch:14},
+        {wch:20},{wch:20},{wch:12}
+      ];
+      XLSX.utils.book_append_sheet(wb, ws1, '開案清單');
+
+      // Sheet 2: 前期需求追蹤
+      const preHeaders = ['編號','日期','來源類型','公司/廠商','需求摘要','Follow-up項目',
+        '截止日','最新進度','業務','PM','狀態','關聯開案編號','備註'];
+      const preRows = [preHeaders];
+      pre.forEach(p => preRows.push([
+        p.id, p.date, p.srcType, p.company, p.summary,
+        p.followup, p.deadline, p.progress, p.sales, p.pm,
+        p.pstatus, p.relatedId, p.note
+      ]));
+      const ws2 = XLSX.utils.aoa_to_sheet(preRows);
+      ws2['!cols'] = [{wch:10},{wch:12},{wch:12},{wch:18},{wch:40},{wch:30},{wch:10},{wch:20},{wch:10},{wch:12},{wch:10},{wch:16},{wch:20}];
+      XLSX.utils.book_append_sheet(wb, ws2, '前期需求追蹤');
+
+      // Sheet 3: Inbox 備忘
+      if(inboxQueue.length){
+        const noteHeaders = ['時間','內容'];
+        const noteRows = [noteHeaders, ...inboxQueue.map(n=>[n.savedAt, n.raw])];
+        const ws3 = XLSX.utils.aoa_to_sheet(noteRows);
+        ws3['!cols'] = [{wch:20},{wch:60}];
+        XLSX.utils.book_append_sheet(wb, ws3, 'Inbox備忘');
+      }
+
+      const date = new Date().toISOString().slice(0,10);
+      XLSX.writeFile(wb, `PM_HW_Tracker_${date}.xlsx`);
+    } catch(e) {
+      alert('匯出失敗：' + e.message);
+    }
+  };
+
+  if(typeof XLSX !== 'undefined'){ doExport(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = doExport;
+  s.onerror = () => alert('無法載入 Excel 函式庫，請檢查網路連線');
+  document.head.appendChild(s);
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM();});
+
+// ── INBOX ─────────────────────────────────────
+let inboxQueue = JSON.parse(localStorage.getItem('inbox_q')||'[]');
+
+function saveQueue(){ localStorage.setItem('inbox_q', JSON.stringify(inboxQueue)); }
+
+function renderQueue(){
+  const el = document.getElementById('inbox-queue');
+  const cnt = document.getElementById('inbox-queue-cnt');
+  if(!el) return;
+  cnt.textContent = inboxQueue.length ? `(${inboxQueue.length})` : '';
+  if(!inboxQueue.length){ el.innerHTML='<div style="font-size:11px;color:var(--text3)">暫無記錄</div>'; return; }
+  el.innerHTML = inboxQueue.map((item,i) => `
+    <div style="background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;color:var(--text3);font-family:'Courier New',monospace;margin-bottom:4px">${item.savedAt}</div>
+        <div style="font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.5">${item.raw}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn" style="padding:4px 9px;font-size:10px" onclick="inboxReparse(${i})">重新解析</button>
+        <button class="btn" style="padding:4px 9px;font-size:10px;color:var(--accent)" onclick="inboxDel(${i})">刪除</button>
+      </div>
+    </div>`).join('');
+}
+
+function inboxDel(i){ inboxQueue.splice(i,1); saveQueue(); renderQueue(); }
+function inboxReparse(i){
+  document.getElementById('inbox-input').value = inboxQueue[i].raw;
+  inboxParse();
+  go('inbox');
+}
+
+function inboxParse(){
+  const raw = document.getElementById('inbox-input').value.trim();
+  if(!raw){ alert('請先輸入文字'); return; }
+  const btn = document.getElementById('inbox-btn');
+  const st  = document.getElementById('inbox-status');
+  const res = document.getElementById('inbox-result');
+  btn.disabled = true;
+  btn.textContent = AI_KEY ? 'Claude 解析中...' : '解析中...';
+  st.textContent = '';
+  inboxQueue.unshift({ raw, savedAt: new Date().toLocaleString('zh-TW') });
+  saveQueue(); renderQueue();
+  // Always read fresh from localStorage
+  AI_KEY = localStorage.getItem('ai_key') || '';
+  SCRIPT_URL = localStorage.getItem('script_url') || '';
+  window.AI_KEY = AI_KEY;
+  window.SCRIPT_URL = SCRIPT_URL;
+  console.log('AI_KEY check:', JSON.stringify(AI_KEY), 'length:', AI_KEY.length, 'truthy:', !!AI_KEY);
+  if(AI_KEY && AI_KEY.length > 10){
+    callClaudeAI(raw, res, st).finally(()=>{btn.disabled=false;btn.textContent='✦ AI 解析';});
+  } else {
+    const actions = parseOffline(raw);
+    renderInboxResult(actions, raw);
+    st.textContent = actions.length ? `解析到 ${actions.length} 個動作（本機）` : '未能識別，已存入備忘';
+    btn.disabled = false; btn.textContent = '✦ AI 解析';
+  }
+}
+
+function showDebug(){
+  var p = document.getElementById('debug-panel');
+  var k = localStorage.getItem('ai_key') || '';
+  var s = localStorage.getItem('script_url') || '';
+  p.style.display = p.style.display==='none' ? 'block' : 'none';
+  p.innerHTML = 
+    'AI_KEY (var): ' + (AI_KEY ? AI_KEY.slice(0,12)+'...' : '【空】') + '<br>' +
+    'AI_KEY (localStorage): ' + (k ? k.slice(0,12)+'...' : '【空】') + '<br>' +
+    'SCRIPT_URL: ' + (s ? s.slice(0,30)+'...' : '【空】') + '<br>' +
+    'projects count: ' + (typeof projects !== 'undefined' ? projects.length : 'undefined');
+}
+
+async function callClaudeAI(raw, resEl, stEl){
+  const today = mmdd();
+  const todayFull = yyyymmdd();
+  const pList = projects.map(p=>p.model+'('+p.id+')').join('\u3001');
+  const sys = `你是 YUAN PM Janet 的 AI 助理。今天 ${today} / ${todayFull}
+
+產品清單：${pList}
+
+Janet 說進度，解析成 JSON 更新指令。
+
+規則：
+1. 備註欄只填「${today} 新內容」，系統自動累加到舊內容前面
+2. 階段只能填：未開始/開發中/有手焊/有試產/可送樣/可量産/重新評估/暫停/待開案/前期規劃
+3. 電性量測/EMI Pre-Test 只能填：尚未/Pass/Fail
+4. 每次更新都要加：本週更新(col 24)填「●」，最後更新日(col 25)填「${todayFull}」
+
+欄位 col 對應（1-indexed）：
+備註=23, 本週更新=24, 最後更新日=25, 階段=18, 電性量測=17, EMI=20, 新料/樣品=21, layout=15, 送洗試產=16
+
+只回傳 JSON，不要有其他文字：
+{"understood":"摘要","updates":[{"sheet":"開案清單","model":"型號","id":"編號","changes":[{"col":23,"field":"備註","value":"${today} 內容"},{"col":24,"field":"本週更新","value":"●"},{"col":25,"field":"最後更新日","value":"${todayFull}"}]}],"uncertain":""}`;
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':(localStorage.getItem('ai_key')||AI_KEY),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:sys,messages:[{role:'user',content:raw}]})
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'API error');}
+    const data = await resp.json();
+    const text = data.content[0].text.replace(/```json|```/g,'').trim();
+    const reply = JSON.parse(text);
+    renderAIResult(reply, resEl, stEl);
+  }catch(e){
+    alert('AI 錯誤：' + e.message + '\nAI_KEY=' + (localStorage.getItem('ai_key')||'').slice(0,15));
+    resEl.innerHTML='<div style="color:var(--accent);padding:10px;background:#fff;border-radius:6px;border:1px solid var(--line)">AI 錯誤：'+e.message+'<br><small style="color:#888">AI_KEY='+AI_KEY.slice(0,10)+'...</small><br><small>改用本機規則</small></div>';
+    const actions=parseOffline(raw);
+    renderInboxResult(actions,raw);
+    stEl.textContent='本機解析：'+actions.length+' 個動作';
+  }
+}
+
+function renderAIResult(reply, resEl, stEl){
+  stEl.textContent='Claude 解析完成';
+  window._aiUpdates = reply.updates||[];
+  var u=reply.updates||[];
+  var html='<div style="background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px">';
+  html+='<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">✦ Claude 解析結果</div>';
+  html+='<div style="font-size:12px;color:var(--text2);padding:8px;background:var(--paper);border-radius:4px;margin-bottom:10px">'+reply.understood+'</div>';
+  u.forEach(function(upd){
+    html+='<div style="margin-bottom:8px;padding:10px;background:rgba(45,106,79,.06);border:1px solid rgba(45,106,79,.2);border-radius:6px">';
+    html+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px">'+upd.model+'</div>';
+    html+='<table style="width:100%;font-size:11px;border-collapse:collapse">';
+    html+='<tr style="background:var(--paper)"><th style="padding:3px 8px;text-align:left;color:var(--text3);font-weight:400">欄位</th><th style="padding:3px 8px;text-align:left;color:var(--text3);font-weight:400">更新值</th></tr>';
+    (upd.changes||[]).forEach(function(c){
+      html+='<tr style="border-top:1px solid var(--line)"><td style="padding:4px 8px;color:var(--text2)">'+c.field+'</td><td style="padding:4px 8px">'+String(c.value).replace(/\n/g,'<br>')+'</td></tr>';
+    });
+    html+='</table></div>';
+  });
+  if(reply.uncertain){
+    html+='<div style="padding:8px;background:rgba(201,150,12,.1);border-radius:4px;font-size:12px;color:var(--gold);margin-bottom:8px">'+reply.uncertain+'</div>';
+  }
+  html+='<div id="ai-action-row" style="display:flex;gap:8px;margin-top:8px">';
+  html+='<button class="btn pri" onclick="confirmAI()">✓ 確認寫入</button>';
+  html+='<button class="btn" onclick="document.getElementById(\'inbox-result\').innerHTML=\'\';window._aiUpdates=[]">取消</button>';
+  html+='</div>';
+  html+='<div id="ai-status" style="margin-top:8px;font-size:12px"></div>';
+  html+='</div>';
+  resEl.innerHTML=html;
+}
+
+async function confirmAI(){
+  var updates=window._aiUpdates||[];
+  if(!updates.length)return;
+  document.getElementById('ai-action-row').innerHTML='';
+  var statusEl=document.getElementById('ai-status');
+  statusEl.innerHTML='<span style="color:var(--gold)">處理中...</span>';
+  await applyUpdates(updates, statusEl);
+  window._aiUpdates=[];
+}
+
+// ── OFFLINE PARSER ────────────────────────────
+function parseOffline(raw){
+  const lines = raw.split(/[\n；;]+/).map(l=>l.trim()).filter(Boolean);
+  const actions = [];
+
+  // Date patterns: 3/4, 03/04, 3月4日, 4/9
+  const dateRe = /(\d{1,2})[\/月](\d{1,2})[日]?/;
+  const extractDate = s => {
+    const m = s.match(dateRe);
+    if(!m) return '';
+    return String(m[1]).padStart(2,'0')+'/'+String(m[2]).padStart(2,'0');
+  };
+
+  // Week offset: N週 = today + N*7
+  const weekRe = /(\d+)\s*週/;
+  const addWeeks = (n) => {
+    const d = new Date(); d.setDate(d.getDate() + n*7);
+    return String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0');
+  };
+
+  // Find matching project by fuzzy model name (also scan full line for model match)
+  const findProj = (keyword, fullLine) => {
+    if(!keyword && !fullLine) return null;
+    const search = (kl) => projects.find(p =>
+      p.model.toLowerCase().replace(/\s/g,'').includes(kl) ||
+      p.id.toLowerCase().replace(/\s/g,'').includes(kl)
+    );
+    if(keyword){
+      const r = search(keyword.toLowerCase().replace(/\s/g,''));
+      if(r) return r;
+    }
+    // Also try scanning full line for any model substring match
+    if(fullLine){
+      const fl = fullLine.toLowerCase().replace(/\s/g,'');
+      const r2 = projects.find(p => {
+        const m = p.model.toLowerCase().replace(/\s/g,'');
+        return m.length > 3 && fl.includes(m);
+      });
+      if(r2) return r2;
+    }
+    return null;
+  };
+
+  // Keywords
+  const layoutKw  = /layout|layout了|進layout|layout完/i;
+  const fabKw     = /送洗|試產|送板|fab/i;
+  const etestKw   = /電性|etest|量測/i;
+  const openKw    = /開案/;
+  const pcbaKw    = /pcba|裝.*ic|換.*ic/i;
+
+  for(const line of lines){
+    const date  = extractDate(line);
+    const wkM   = line.match(weekRe);
+    const wkDate = wkM ? addWeeks(parseInt(wkM[1])) : '';
+
+    // Try to extract model name: first token before 空白/關鍵字
+    const modelM = line.match(/^([A-Za-z0-9\-\_]+)/);
+    const modelRaw = modelM ? modelM[1] : '';
+    const proj = findProj(modelRaw, line);
+
+    // ── Layout update ──
+    if(layoutKw.test(line)){
+      const d = date || new Date().toISOString().slice(5,10).replace('-','/');
+      if(proj){
+        actions.push({
+          action:'update_project', confidence:0.85,
+          summary:`更新 ${proj.model} Layout 日期 → ${d}`,
+          fields:{ id:proj.id, model:proj.model, layout:d }
+        });
+      } else if(modelRaw){
+        actions.push({
+          action:'update_project', confidence:0.6,
+          summary:`找不到 ${modelRaw}，請確認型號`,
+          fields:{ model:modelRaw, layout:d }
+        });
+      } else {
+        actions.push({ action:'note', confidence:0.5, summary:'Layout 更新（未識別型號）', fields:{ content:line } });
+      }
+      continue;
+    }
+
+    // ── 送洗/試產 ──
+    if(fabKw.test(line)){
+      const d = date || wkDate;
+      if(proj){
+        actions.push({
+          action:'update_project', confidence:0.85,
+          summary:`更新 ${proj.model} 送洗/試產 → ${d||'待填'}`,
+          fields:{ id:proj.id, model:proj.model, fab:d }
+        });
+      } else {
+        actions.push({ action:'note', confidence:0.5, summary:'送洗進度（未識別型號）', fields:{ content:line } });
+      }
+      continue;
+    }
+
+    // ── 電性量測 ──
+    if(etestKw.test(line)){
+      const d = date || wkDate;
+      if(proj){
+        actions.push({
+          action:'update_project', confidence:0.85,
+          summary:`更新 ${proj.model} 電性量測 → ${d||'待填'}`,
+          fields:{ id:proj.id, model:proj.model, etest:d }
+        });
+      } else {
+        actions.push({ action:'note', confidence:0.5, summary:'電性量測（未識別型號）', fields:{ content:line } });
+      }
+      continue;
+    }
+
+    // ── 新增開案 ──
+    if(openKw.test(line) && modelRaw){
+      const d  = date;
+      const wd = wkDate;
+      actions.push({
+        action:'new_project', confidence:0.8,
+        summary:`新增開案 ${modelRaw}${d?' 開案日:'+d:''}`,
+        fields:{
+          model: modelRaw,
+          status:'開案', cat:'', ver:'V10', pm:'Janet',
+          layout: wd || '',
+          note: line
+        }
+      });
+      continue;
+    }
+
+    // ── PCBA / IC 客製需求 ──
+    if(pcbaKw.test(line)){
+      actions.push({
+        action:'new_pre', confidence:0.75,
+        summary:`前期需求：${line.slice(0,40)}`,
+        fields:{ company:'內部', summary:line, srcType:'隨手記錄', pm:'Janet' }
+      });
+      continue;
+    }
+
+    // ── 本週更新 ──
+    if(proj && (date || wkDate)){
+      actions.push({
+        action:'update_project', confidence:0.7,
+        summary:`更新 ${proj.model} 本週紀錄`,
+        fields:{ id:proj.id, model:proj.model, weekUpdate:line }
+      });
+      continue;
+    }
+
+    // ── Fallback: note ──
+    actions.push({
+      action:'note', confidence:0.4,
+      summary:'無法識別，存為備忘',
+      fields:{ content:line }
+    });
+  }
+
+  return actions;
+}
+
+let _lastActions = [];
+function renderInboxResult(actions, raw){
+  _lastActions = actions;
+  const res = document.getElementById('inbox-result');
+  const confColor = c => c >= 0.8 ? '#2d6a4f' : c >= 0.6 ? '#8a6400' : '#888';
+  const actionLabel = {'new_project':'新增開案','update_project':'更新開案','new_pre':'新增前期需求','note':'備忘記錄'};
+  const actionColor = {'new_project':'rgba(26,58,92,.1)','update_project':'rgba(45,106,79,.1)','new_pre':'rgba(200,57,43,.08)','note':'rgba(0,0,0,.04)'};
+
+  res.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px">解析結果（共 ${actions.length} 個動作）</div>
+    ${actions.map((a,i) => `
+      <div data-action="${i}" style="background:${actionColor[a.action]||'rgba(0,0,0,.04)'};border:1px solid var(--line);border-radius:7px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,.08)">${actionLabel[a.action]||a.action}</span>
+          <span style="font-size:11px;color:var(--text2)">${a.summary}</span>
+          <span style="margin-left:auto;font-size:10px;color:${confColor(a.confidence)};font-family:'Courier New',monospace">信心 ${Math.round(a.confidence*100)}%</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;margin-bottom:12px">
+          ${Object.entries(a.fields||{}).map(([k,v])=>`
+            <div style="background:rgba(255,255,255,.7);border-radius:4px;padding:7px 9px">
+              <div style="font-size:9px;color:var(--text3);margin-bottom:2px">${k}</div>
+              <input id="ib-${i}-${k}" value="${String(v||'').replace(/"/g,'&quot;')}" style="width:100%;border:none;background:transparent;font-size:12px;font-weight:600;padding:0;font-family:inherit;color:var(--text)">
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn pri" style="font-size:11px" data-aidx="${i}" onclick="inboxApplyIdx(this)">✓ 存入系統</button>
+          <button class="btn" style="font-size:11px" onclick="this.closest('div[data-action]').remove()">略過</button>
+        </div>
+      </div>`).join('')}
+    <div style="margin-top:4px;text-align:right">
+      <button class="btn pri" onclick="inboxApplyAll()">✓ 全部存入</button>
+    </div>`;
+}
+
+function inboxApply(i, actionStr, btn){
+  let a;
+  try { a = JSON.parse(actionStr); } catch(e){ alert('解析錯誤'); return; }
+
+  // Read back any edited field values
+  const fields = {};
+  Object.keys(a.fields||{}).forEach(k=>{
+    const el = document.getElementById(`ib-${i}-${k}`);
+    fields[k] = el ? el.value : a.fields[k];
+  });
+  a.fields = fields;
+
+  const result = applyAction(a);
+  if(result){
+    btn.textContent = '✓ 已存入';
+    btn.disabled = true;
+    btn.style.background = '#2d6a4f';
+    save(); fillFilters(); renderDash(); renderList(); renderPre();
+  }
+}
+
+function inboxApplyIdx(btn){
+  const i = parseInt(btn.getAttribute('data-aidx'));
+  const a = _lastActions[i];
+  if(!a){ alert('找不到動作'); return; }
+  // Read back edited fields
+  const fields = {};
+  Object.keys(a.fields||{}).forEach(k=>{
+    const el = document.getElementById('ib-'+i+'-'+k);
+    fields[k] = el ? el.value : a.fields[k];
+  });
+  a.fields = fields;
+  if(applyAction(a)){
+    btn.textContent = '✓ 已存入';
+    btn.disabled = true;
+    btn.style.background = '#2d6a4f';
+    save(); fillFilters(); renderDash(); renderList(); renderPre();
+  }
+}
+
+function inboxApplyAll(actionsStr){
+  const actions = _lastActions;
+  let count = 0;
+  actions.forEach((a,i)=>{
+    const fields = {};
+    Object.keys(a.fields||{}).forEach(k=>{
+      const el = document.getElementById('ib-'+i+'-'+k);
+      fields[k] = el ? el.value : a.fields[k];
+    });
+    a.fields = fields;
+    if(applyAction(a)) count++;
+  });
+  save(); fillFilters(); renderDash(); renderList(); renderPre();
+  alert(`✓ 已存入 ${count} 個動作`);
+}
+
+function applyAction(a){
+  const f = a.fields || {};
+  if(a.action === 'new_project'){
+    if(!f.model){ alert('缺少型號，無法新增'); return false; }
+    projects.unshift({
+      id: f.id || 'RF-'+new Date().toISOString().slice(2,10).replace(/-/g,''),
+      model: f.model||'', ver: f.ver||'V10', cat: f.cat||'',
+      type: f.type||'標準', status: f.status||'開案',
+      pm: f.pm||'Janet', hw: f.hw||'', sales: f.sales||'',
+      layout: f.layout||'', fab: f.fab||'', etest:'', emi:'',
+      top5:'', whiteboard:'', trello:'',
+      note: f.note||'', weekUpdate: f.weekUpdate||'',
+      lastUpdate: new Date().toISOString().slice(0,10)
+    });
+    return true;
+  }
+  if(a.action === 'update_project'){
+    const key = f.id || f.model;
+    const p = projects.find(x => x.id===key || x.model===key ||
+      (key && (x.id.toLowerCase().includes(key.toLowerCase()) || x.model.toLowerCase().includes(key.toLowerCase()))));
+    if(!p){ alert(`找不到案子：${key}`); return false; }
+    const skip = ['id','model'];
+    Object.entries(f).forEach(([k,v])=>{ if(!skip.includes(k) && v) p[k]=v; });
+    return true;
+  }
+  if(a.action === 'new_pre'){
+    pre.unshift({
+      id: 'PRE-'+String(pre.length+1).padStart(3,'0'),
+      date: new Date().toISOString().slice(0,10),
+      srcType: f.srcType||'手動記錄',
+      company: f.company||'—',
+      summary: f.summary||'',
+      followup:'', deadline: f.deadline||'',
+      progress:'', sales:'', pm: f.pm||'Janet',
+      pstatus:'待處理', relatedId:'', note:''
+    });
+    return true;
+  }
+  if(a.action === 'note'){
+    // Save to inboxQueue as a note, NOT into pre array
+    inboxQueue.unshift({
+      raw: f.content || '',
+      savedAt: new Date().toLocaleString('zh-TW'),
+      isNote: true
+    });
+    saveQueue(); renderQueue();
+    return true;
+  }
+  return false;
+}
+
+init();
+renderQueue();
+</script>
+</body>
+</html>
